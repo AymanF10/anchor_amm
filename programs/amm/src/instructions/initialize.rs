@@ -1,10 +1,12 @@
 use anchor_lang::prelude::*;
 use anchor_spl::{self, associated_token::AssociatedToken, token::{TokenAccount, Token, Mint}};
+
 use crate::state::Config;
 
 #[derive(Accounts)]
 #[instruction(seed: u64)]
 pub struct Initialize<'info> {
+    
     #[account(mut)]
     pub initializer: Signer<'info>,
     pub mint_x: Account<'info, Mint>,
@@ -43,16 +45,11 @@ pub struct Initialize<'info> {
     pub token_program: Program<'info, Token>,
     pub associated_token_program: Program<'info, AssociatedToken>,
     pub system_program: Program<'info, System>,
-}
 
+}
 impl<'info> Initialize<'info> {
-    pub fn init(
-        &mut self,
-        seed: u64,
-        fee: u16,
-        authority: Option<Pubkey>,
-        bumps: &InitializeBumps
-    ) -> Result<()> {
+    pub fn init(&mut self, seed: u64, fee: u16, authority: Option<Pubkey>, bumps: &InitializeBumps) -> Result<()> {
+        
         self.config.set_inner(Config {
             authority,
             seed,
@@ -61,27 +58,9 @@ impl<'info> Initialize<'info> {
             mint_y: self.mint_y.key(),
             locked: false,
             config_bump: bumps.config,
-            lp_bump: bumps.mint_lp,
+            lp_bump: bumps.mint_lp, 
         });
         Ok(())
     }
-}
 
-impl<'info> anchor_lang::Accounts<'info> for Initialize<'info> {
-    fn accounts(&self) -> Vec<AccountInfo<'info>> {
-        let mut accounts = vec![
-            AccountInfo::new_readonly(self.initializer.key(), false),
-            AccountInfo::new_readonly(self.mint_x.key(), false),
-            AccountInfo::new_readonly(self.mint_y.key(), false),
-            AccountInfo::new_readonly(self.mint_lp.key(), false),
-            AccountInfo::new(self.vault_x.key(), false),
-            AccountInfo::new(self.vault_y.key(), false),
-            AccountInfo::new(self.config.key(), false),
-            AccountInfo::new_readonly(self.token_program.key(), false),
-            AccountInfo::new_readonly(self.associated_token_program.key(), false),
-            AccountInfo::new_readonly(self.system_program.key(), false),
-        ];
-        accounts
-    }
 }
-
